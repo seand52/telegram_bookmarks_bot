@@ -1,11 +1,9 @@
-require('dotenv').config()
-const TelegramBot = require("node-telegram-bot-api");
+require("dotenv").config();
+const bot = require("./config/telegram_config");
 const ogs = require("open-graph-scraper");
-// const firebase = require("firebase");
-const {sitesRef, bookmarksRef} = require('./firebase_config')
-// initialise telegram bot
-const token = process.env.TELEGRAM_BOT_TOKEN;
-const bot = new TelegramBot(token, { polling: true });
+const { sitesRef} = require("./config/firebase_config");
+const Logic = require("./logic/logic");
+const services = new Logic();
 
 let siteUrl;
 
@@ -16,22 +14,7 @@ bot.onText(/\/bookmark (.+)/, (msg, match) => {
     "Alright friend, What category does this bookmark belong to?",
     {
       reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              text: "Development",
-              callback_data: "SET development"
-            },
-            {
-              text: "Music",
-              callback_data: "SET music"
-            },
-            {
-              text: "Cute monkeys",
-              callback_data: "SET cute-monkeys"
-            }
-          ]
-        ]
+        inline_keyboard: services.getCategories("SET")
       }
     }
   );
@@ -41,22 +24,7 @@ bot.onText(/\/getBookMarks/, (msg, match) => {
   siteUrl = match[1];
   bot.sendMessage(msg.chat.id, "What category would you like to get?", {
     reply_markup: {
-      inline_keyboard: [
-        [
-          {
-            text: "Development",
-            callback_data: "GET development"
-          },
-          {
-            text: "Music",
-            callback_data: "GET music"
-          },
-          {
-            text: "Cute monkeys",
-            callback_data: "GET cute-monkeys"
-          }
-        ]
-      ]
+      inline_keyboard: services.getCategories("GET")
     }
   });
 });
@@ -68,23 +36,15 @@ bot.on("callback_query", callbackQuery => {
   if (callbackQuery.data.split(" ")[0] === "SET") {
     ogs({ url: siteUrl }, function(error, results) {
       if (results.success) {
-        sitesRef.push().set({
-          name: results.data.ogSiteName,
-          title: results.data.ogTitle,
-          description: results.data.ogDescription,
-          url: siteUrl,
-          thumbnail: results.data.ogImage.url,
-          category: keyboardResponse,
-          index: `${userId}-${keyboardResponse}`,
+        services.setBookMarkData(sitesRef, {
+          results,
+          siteUrl,
+          keyboardResponse,
           userId
         });
         bot.sendMessage(
           message.chat.id,
-          'Added "' +
-            results.data.ogTitle +
-            '" to category "' +
-            callbackQuery.data +
-            '"!'
+          `Added ${results.data.ogTitle} to category ${callbackQuery.data}!`
         );
       } else {
         sitesRef.push().set({
