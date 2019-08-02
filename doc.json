@@ -1,0 +1,12 @@
+{
+  "telegram-bookmark-bot": {
+    "sites": {
+      "name": null,
+      "title": null,
+      "description": null,
+      "url": null,
+      "thumbnail": null,
+      "category": null
+    }
+  }
+}

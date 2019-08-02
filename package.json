@@ -1,0 +1,14 @@
+{
+  "name": "telegram_bot",
+  "version": "1.0.0",
+  "description": "My telegram bot",
+  "main": "index.js",
+  "author": "Sean Daryanani",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^8.0.0",
+    "firebase": "^6.3.3",
+    "node-telegram-bot-api": "^0.30.0",
+    "open-graph-scraper": "^3.6.2"
+  }
+}
